@@ -9,6 +9,8 @@ import Patients from "@/pages/patients";
 import Appointments from "@/pages/appointments";
 import Telehealth from "@/pages/telehealth";
 import AIInsights from "@/pages/ai-insights";
+import MedicalUpload from "@/pages/medical-upload";
+import AdvancedAIAnalysis from "@/pages/advanced-ai-analysis";
 import MedicalRecords from "@/pages/medical-records";
 import Messages from "@/pages/messages";
 import Analytics from "@/pages/analytics";
@@ -36,6 +38,8 @@ function Router() {
             <Route path="/appointments" component={Appointments} />
             <Route path="/telehealth" component={Telehealth} />
             <Route path="/ai-insights" component={AIInsights} />
+            <Route path="/medical-upload" component={MedicalUpload} />
+            <Route path="/advanced-ai" component={AdvancedAIAnalysis} />
             <Route path="/medical-records" component={MedicalRecords} />
             <Route path="/messages" component={Messages} />
             <Route path="/analytics" component={Analytics} />

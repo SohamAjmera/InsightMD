@@ -168,3 +168,237 @@ export async function generateMedicalSummary(medicalData: {
     throw new Error(`Failed to generate medical summary: ${error}`);
   }
 }
+
+// Additional AI-powered medical analysis functions
+export async function analyzeMedicalImage(imagePath: string, imageType: 'xray' | 'ct' | 'mri' | 'blood_test'): Promise<{
+  findings: string[];
+  diagnosis: string;
+  riskLevel: 'low' | 'medium' | 'high';
+  recommendations: string[];
+  confidence: number;
+}> {
+  try {
+    const fs = await import('fs');
+    const path = await import('path');
+    
+    const imageBytes = fs.readFileSync(imagePath);
+    const mimeType = path.extname(imagePath).toLowerCase() === '.png' ? 'image/png' : 'image/jpeg';
+
+    const prompt = `Analyze this ${imageType.replace('_', ' ')} medical image and provide detailed findings:
+
+Please analyze the image for:
+1. Key anatomical findings
+2. Any abnormalities or areas of concern
+3. Potential diagnosis based on visible features
+4. Risk assessment
+5. Recommended follow-up actions
+
+Format your response as JSON with these keys: findings (array), diagnosis, riskLevel (low/medium/high), recommendations (array), confidence (0-100).
+
+IMPORTANT: This analysis is for educational purposes and should not replace professional radiological interpretation.`;
+
+    const contents = [
+      {
+        inlineData: {
+          data: imageBytes.toString("base64"),
+          mimeType: mimeType,
+        },
+      },
+      prompt,
+    ];
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-pro",
+      contents: contents,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+
+    const result = JSON.parse(response.text || '{}');
+    
+    return {
+      findings: result.findings || ["Unable to analyze image"],
+      diagnosis: result.diagnosis || "Analysis inconclusive",
+      riskLevel: result.riskLevel || "medium",
+      recommendations: result.recommendations || ["Consult with a radiologist"],
+      confidence: result.confidence || 50,
+    };
+  } catch (error) {
+    console.error("Error analyzing medical image:", error);
+    return {
+      findings: ["Image analysis failed"],
+      diagnosis: "Technical error occurred",
+      riskLevel: "medium",
+      recommendations: ["Please consult with a medical professional"],
+      confidence: 0,
+    };
+  }
+}
+
+export async function generateMedicalReport(patientData: any, diagnosticResults: any): Promise<{
+  summary: string;
+  detailedFindings: string;
+  recommendations: string[];
+  followUpActions: string[];
+}> {
+  try {
+    const prompt = `Generate a comprehensive medical report based on the following data:
+
+Patient Information:
+- Name: ${patientData.firstName} ${patientData.lastName}
+- Age: ${patientData.age || 'Not specified'}
+- Gender: ${patientData.gender || 'Not specified'}
+- Medical History: ${JSON.stringify(patientData.medicalHistory)}
+- Allergies: ${patientData.allergies?.join(', ') || 'None reported'}
+- Current Medications: ${patientData.medications?.join(', ') || 'None reported'}
+
+Diagnostic Results:
+${JSON.stringify(diagnosticResults)}
+
+Please generate a professional medical report with:
+1. Executive summary
+2. Detailed findings and analysis
+3. Clinical recommendations
+4. Follow-up actions needed
+
+Format as JSON with keys: summary, detailedFindings, recommendations (array), followUpActions (array).
+
+IMPORTANT: This is for educational purposes and should not replace professional medical documentation.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-pro",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+
+    const result = JSON.parse(response.text || '{}');
+    
+    return {
+      summary: result.summary || "Report generation incomplete",
+      detailedFindings: result.detailedFindings || "Unable to generate detailed findings",
+      recommendations: result.recommendations || ["Consult healthcare provider"],
+      followUpActions: result.followUpActions || ["Schedule follow-up appointment"],
+    };
+  } catch (error) {
+    console.error("Error generating medical report:", error);
+    return {
+      summary: "Report generation failed",
+      detailedFindings: "Technical error occurred during report generation",
+      recommendations: ["Consult with healthcare provider"],
+      followUpActions: ["Manual report generation required"],
+    };
+  }
+}
+
+export async function analyzeBloodTest(bloodTestData: any): Promise<{
+  normalValues: any;
+  abnormalValues: any;
+  interpretation: string;
+  riskFactors: string[];
+  recommendations: string[];
+  confidence: number;
+}> {
+  try {
+    const prompt = `Analyze these blood test results and provide medical interpretation:
+
+Blood Test Results:
+${JSON.stringify(bloodTestData)}
+
+Please provide:
+1. Values within normal range
+2. Values outside normal range with significance
+3. Clinical interpretation of results
+4. Potential risk factors identified
+5. Medical recommendations
+6. Confidence in analysis (0-100%)
+
+Format as JSON with keys: normalValues, abnormalValues, interpretation, riskFactors (array), recommendations (array), confidence.
+
+IMPORTANT: This analysis is for educational purposes and should not replace professional laboratory interpretation.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-pro",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+
+    const result = JSON.parse(response.text || '{}');
+    
+    return {
+      normalValues: result.normalValues || {},
+      abnormalValues: result.abnormalValues || {},
+      interpretation: result.interpretation || "Unable to interpret results",
+      riskFactors: result.riskFactors || ["Consult healthcare provider"],
+      recommendations: result.recommendations || ["Professional review recommended"],
+      confidence: result.confidence || 50,
+    };
+  } catch (error) {
+    console.error("Error analyzing blood test:", error);
+    return {
+      normalValues: {},
+      abnormalValues: {},
+      interpretation: "Analysis failed due to technical error",
+      riskFactors: ["Technical analysis unavailable"],
+      recommendations: ["Consult with healthcare provider for manual interpretation"],
+      confidence: 0,
+    };
+  }
+}
+
+export async function provideMedicalRecommendations(symptoms: string[], patientHistory: any): Promise<{
+  immediateActions: string[];
+  lifestyleRecommendations: string[];
+  preventiveMeasures: string[];
+  whenToSeekHelp: string[];
+  confidence: number;
+}> {
+  try {
+    const prompt = `Based on the presented symptoms and patient history, provide comprehensive medical recommendations:
+
+Current Symptoms: ${symptoms.join(', ')}
+Patient Medical History: ${JSON.stringify(patientHistory)}
+
+Please provide:
+1. Immediate actions the patient should take
+2. Lifestyle modifications that could help
+3. Preventive measures for the future
+4. Clear indicators of when to seek immediate medical help
+5. Confidence level in recommendations (0-100%)
+
+Format as JSON with keys: immediateActions (array), lifestyleRecommendations (array), preventiveMeasures (array), whenToSeekHelp (array), confidence.
+
+IMPORTANT: These are general recommendations and should not replace professional medical advice.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+
+    const result = JSON.parse(response.text || '{}');
+    
+    return {
+      immediateActions: result.immediateActions || ["Consult healthcare provider"],
+      lifestyleRecommendations: result.lifestyleRecommendations || ["Maintain healthy lifestyle"],
+      preventiveMeasures: result.preventiveMeasures || ["Regular health checkups"],
+      whenToSeekHelp: result.whenToSeekHelp || ["If symptoms worsen or persist"],
+      confidence: result.confidence || 50,
+    };
+  } catch (error) {
+    console.error("Error providing medical recommendations:", error);
+    return {
+      immediateActions: ["Seek professional medical advice"],
+      lifestyleRecommendations: ["Consult with healthcare provider"],
+      preventiveMeasures: ["Regular medical checkups"],
+      whenToSeekHelp: ["Any concerning symptoms"],
+      confidence: 0,
+    };
+  }
+}
