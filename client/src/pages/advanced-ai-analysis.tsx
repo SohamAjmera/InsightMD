@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import Medical3DViewer from "@/components/3d-visualization/medical-3d-viewer";
 
 export default function AdvancedAIAnalysis() {
   const [analysisMode, setAnalysisMode] = useState<'3d-visualization' | 'specialist-connect' | 'feedback' | 'multi-language'>('3d-visualization');
@@ -283,48 +284,19 @@ export default function AdvancedAIAnalysis() {
             </Card>
 
             {analysisResults && analysisMode === '3d-visualization' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Activity className="h-5 w-5" />
-                    <span>3D Visualization Results</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="bg-gray-100 rounded-lg p-6 text-center">
-                    <Scan className="h-16 w-16 text-blue-500 mx-auto mb-4" />
-                    <h3 className="font-medium text-gray-900 mb-2">Interactive 3D Model Ready</h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Your medical scan has been processed into a rotatable, zoomable 3D model
-                    </p>
-                    <div className="flex space-x-2 justify-center">
-                      <Button size="sm" variant="outline">
-                        <Eye className="h-4 w-4 mr-2" />
-                        View 3D Model
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-green-50 rounded">
-                      <span className="text-sm font-medium text-green-800">Resolution Enhancement</span>
-                      <Badge className="bg-green-100 text-green-800">Applied</Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded">
-                      <span className="text-sm font-medium text-blue-800">Anatomical Labeling</span>
-                      <Badge className="bg-blue-100 text-blue-800">Complete</Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-purple-50 rounded">
-                      <span className="text-sm font-medium text-purple-800">Abnormality Detection</span>
-                      <Badge className="bg-purple-100 text-purple-800">Analyzed</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <Medical3DViewer 
+                scanData={{
+                  type: scanData.scanType as 'mri' | 'ct' | 'xray',
+                  region: scanData.region,
+                  resolution: scanData.sliceThickness
+                }}
+                onDownload={() => {
+                  toast({
+                    title: "Download Started",
+                    description: "3D model download has been initiated.",
+                  });
+                }}
+              />
             )}
           </div>
         </TabsContent>

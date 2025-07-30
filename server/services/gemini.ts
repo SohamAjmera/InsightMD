@@ -1,6 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+// Use the provided API key or fall back to environment variable
+const GEMINI_API_KEY = "AIzaSyD6rMkxy1lTZjJWX3NKknDe84pFghRmDXw" || process.env.GEMINI_API_KEY || "";
+
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 export interface MedicalAnalysis {
   riskLevel: "low" | "medium" | "high" | "urgent";

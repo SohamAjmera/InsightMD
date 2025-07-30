@@ -1,10 +1,18 @@
 import express, { type Request, Response, NextFunction } from "express";
+import fileUpload from "express-fileupload";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(fileUpload({
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  abortOnLimit: true,
+  createParentPath: true,
+  tempFileDir: '/tmp/',
+  useTempFiles: true,
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -64,7 +72,6 @@ app.use((req, res, next) => {
   server.listen({
     port,
     host: "0.0.0.0",
-    reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
   });
