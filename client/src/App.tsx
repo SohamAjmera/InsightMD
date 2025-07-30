@@ -1,29 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
-import { Switch, Route } from "wouter";
-import { useState } from "react";
+import { Switch, Route, useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-// Layout Components
-import Header from "@/components/layout/header";
-import Sidebar from "@/components/layout/sidebar";
-import MobileSidebar from "@/components/layout/mobile-sidebar";
-
-// Pages
-import Home from "@/pages/home";
-import Dashboard from "@/pages/dashboard";
-import Patients from "@/pages/patients";
-import Appointments from "@/pages/appointments";
-import Messages from "@/pages/messages";
-import Telehealth from "@/pages/telehealth";
-import MedicalUpload from "@/pages/medical-upload";
-import AIInsights from "@/pages/ai-insights";
-import AdvancedAIAnalysis from "@/pages/advanced-ai-analysis";
-import MedicalRecords from "@/pages/medical-records";
-import NotFound from "@/pages/not-found";
-
-// AI Chatbot
-import MedicalChatbot from "@/components/ai-chatbot/medical-chatbot";
+// Auth and Dashboard Components
+import AuthPage from "@/pages/auth";
+import PatientDashboard from "@/components/dashboard/patient-dashboard";
+import DoctorDashboard from "@/components/dashboard/doctor-dashboard";
+import LandingPage from "@/pages/landing";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,141 +20,118 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [location, setLocation] = useLocation();
+
+  // Check for stored user session on app load
+  useEffect(() => {
+    const storedUser = localStorage.getItem('insightmd_user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        localStorage.removeItem('insightmd_user');
+      }
+    }
+  }, []);
+
+  const handleAuth = (userData: any) => {
+    setUser(userData);
+    localStorage.setItem('insightmd_user', JSON.stringify(userData));
+    
+    // Redirect to appropriate dashboard
+    if (userData.type === 'doctor') {
+      setLocation('/doctor-dashboard');
+    } else {
+      setLocation('/patient-dashboard');
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('insightmd_user');
+    setLocation('/');
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="min-h-screen bg-background">
-          <Switch>
-            <Route path="/" component={Home} />
-            <Route path="/dashboard">
-              <div className="flex h-screen pt-16">
-                <Header onMobileMenuClick={() => setIsMobileSidebarOpen(true)} />
-                <Sidebar />
-                <MobileSidebar 
-                  isOpen={isMobileSidebarOpen} 
-                  onClose={() => setIsMobileSidebarOpen(false)} 
-                />
-                <main className="flex-1 overflow-y-auto">
-                  <Dashboard />
-                </main>
-              </div>
-            </Route>
-            <Route path="/patients">
-              <div className="flex h-screen pt-16">
-                <Header onMobileMenuClick={() => setIsMobileSidebarOpen(true)} />
-                <Sidebar />
-                <MobileSidebar 
-                  isOpen={isMobileSidebarOpen} 
-                  onClose={() => setIsMobileSidebarOpen(false)} 
-                />
-                <main className="flex-1 overflow-y-auto">
-                  <Patients />
-                </main>
-              </div>
-            </Route>
-            <Route path="/appointments">
-              <div className="flex h-screen pt-16">
-                <Header onMobileMenuClick={() => setIsMobileSidebarOpen(true)} />
-                <Sidebar />
-                <MobileSidebar 
-                  isOpen={isMobileSidebarOpen} 
-                  onClose={() => setIsMobileSidebarOpen(false)} 
-                />
-                <main className="flex-1 overflow-y-auto">
-                  <Appointments />
-                </main>
-              </div>
-            </Route>
-            <Route path="/messages">
-              <div className="flex h-screen pt-16">
-                <Header onMobileMenuClick={() => setIsMobileSidebarOpen(true)} />
-                <Sidebar />
-                <MobileSidebar 
-                  isOpen={isMobileSidebarOpen} 
-                  onClose={() => setIsMobileSidebarOpen(false)} 
-                />
-                <main className="flex-1 overflow-y-auto">
-                  <Messages />
-                </main>
-              </div>
-            </Route>
-            <Route path="/telehealth">
-              <div className="flex h-screen pt-16">
-                <Header onMobileMenuClick={() => setIsMobileSidebarOpen(true)} />
-                <Sidebar />
-                <MobileSidebar 
-                  isOpen={isMobileSidebarOpen} 
-                  onClose={() => setIsMobileSidebarOpen(false)} 
-                />
-                <main className="flex-1 overflow-y-auto">
-                  <Telehealth />
-                </main>
-              </div>
-            </Route>
-            <Route path="/medical-upload">
-              <div className="flex h-screen pt-16">
-                <Header onMobileMenuClick={() => setIsMobileSidebarOpen(true)} />
-                <Sidebar />
-                <MobileSidebar 
-                  isOpen={isMobileSidebarOpen} 
-                  onClose={() => setIsMobileSidebarOpen(false)} 
-                />
-                <main className="flex-1 overflow-y-auto">
-                  <MedicalUpload />
-                </main>
-              </div>
-            </Route>
-            <Route path="/ai-insights">
-              <div className="flex h-screen pt-16">
-                <Header onMobileMenuClick={() => setIsMobileSidebarOpen(true)} />
-                <Sidebar />
-                <MobileSidebar 
-                  isOpen={isMobileSidebarOpen} 
-                  onClose={() => setIsMobileSidebarOpen(false)} 
-                />
-                <main className="flex-1 overflow-y-auto">
-                  <AIInsights />
-                </main>
-              </div>
-            </Route>
-            <Route path="/advanced-ai">
-              <div className="flex h-screen pt-16">
-                <Header onMobileMenuClick={() => setIsMobileSidebarOpen(true)} />
-                <Sidebar />
-                <MobileSidebar 
-                  isOpen={isMobileSidebarOpen} 
-                  onClose={() => setIsMobileSidebarOpen(false)} 
-                />
-                <main className="flex-1 overflow-y-auto">
-                  <AdvancedAIAnalysis />
-                </main>
-              </div>
-            </Route>
-            <Route path="/medical-records">
-              <div className="flex h-screen pt-16">
-                <Header onMobileMenuClick={() => setIsMobileSidebarOpen(true)} />
-                <Sidebar />
-                <MobileSidebar 
-                  isOpen={isMobileSidebarOpen} 
-                  onClose={() => setIsMobileSidebarOpen(false)} 
-                />
-                <main className="flex-1 overflow-y-auto">
-                  <MedicalRecords />
-                </main>
-              </div>
-            </Route>
-            <Route component={NotFound} />
-          </Switch>
-          
-          {/* AI Chatbot - Available on all pages except home */}
-          <Route path="/">
-            {() => null}
-          </Route>
-          <Route>
-            <MedicalChatbot />
-          </Route>
+        <div className="min-h-screen">
+          <AnimatePresence mode="wait">
+            <Switch>
+              <Route path="/">
+                <motion.div
+                  key="landing"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <LandingPage onGetStarted={() => setLocation('/auth')} />
+                </motion.div>
+              </Route>
+              
+              <Route path="/auth">
+                <motion.div
+                  key="auth"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <AuthPage onAuth={handleAuth} />
+                </motion.div>
+              </Route>
+              
+              <Route path="/patient-dashboard">
+                {user && user.type === 'patient' ? (
+                  <motion.div
+                    key="patient-dashboard"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <PatientDashboard user={user} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="redirect-auth"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <AuthPage onAuth={handleAuth} />
+                  </motion.div>
+                )}
+              </Route>
+              
+              <Route path="/doctor-dashboard">
+                {user && user.type === 'doctor' ? (
+                  <motion.div
+                    key="doctor-dashboard"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <DoctorDashboard user={user} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="redirect-auth"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <AuthPage onAuth={handleAuth} />
+                  </motion.div>
+                )}
+              </Route>
+            </Switch>
+          </AnimatePresence>
         </div>
         <Toaster />
       </TooltipProvider>
